@@ -3,11 +3,25 @@
 // X OAuth 2.0 PKCE + X API
 // ========================================
 
-// ★ここだけ自分のClient IDに変更
+
+// ========================================
+// ★ X Developer ConsoleのClient ID
+// ========================================
+
 const CLIENT_ID = "dHpEalVBeWRTZ1BpSmNJdXdpdXk6MTpjaQ";
+
+
+// ========================================
+// X-StockのURL
+// ========================================
 
 const REDIRECT_URI =
   "https://shoooy0601-cmd.github.io/x-stock/";
+
+
+// ========================================
+// X API
+// ========================================
 
 const AUTH_URL =
   "https://x.com/i/oauth2/authorize";
@@ -17,6 +31,11 @@ const TOKEN_URL =
 
 const API_BASE =
   "https://api.x.com/2";
+
+
+// ========================================
+// OAuth 2.0 Scope
+// ========================================
 
 const SCOPES = [
   "tweet.read",
@@ -48,17 +67,24 @@ const selectedCount =
 const postList =
   document.getElementById("postList");
 
+
+// ========================================
+// Data
+// ========================================
+
 let posts = [];
 
 
 // ========================================
-// PKCE
+// Random string
 // ========================================
 
 function generateRandomString(length = 64) {
 
   const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+    "abcdefghijklmnopqrstuvwxyz" +
+    "0123456789-._~";
 
   const array =
     new Uint8Array(length);
@@ -66,10 +92,17 @@ function generateRandomString(length = 64) {
   crypto.getRandomValues(array);
 
   return Array.from(array)
-    .map((x) => chars[x % chars.length])
+    .map(
+      (x) =>
+        chars[x % chars.length]
+    )
     .join("");
 }
 
+
+// ========================================
+// SHA-256
+// ========================================
 
 async function sha256(text) {
 
@@ -82,6 +115,10 @@ async function sha256(text) {
   );
 }
 
+
+// ========================================
+// Base64 URL encode
+// ========================================
 
 function base64UrlEncode(buffer) {
 
@@ -96,6 +133,10 @@ function base64UrlEncode(buffer) {
 }
 
 
+// ========================================
+// PKCE Code Challenge
+// ========================================
+
 async function createCodeChallenge(verifier) {
 
   const hash =
@@ -106,7 +147,7 @@ async function createCodeChallenge(verifier) {
 
 
 // ========================================
-// X Login
+// Xアカウント接続
 // ========================================
 
 loginButton.addEventListener(
@@ -115,7 +156,8 @@ loginButton.addEventListener(
 
     if (
       !CLIENT_ID ||
-      CLIENT_ID === "YOUR_CLIENT_ID_HERE"
+      CLIENT_ID ===
+        "YOUR_CLIENT_ID_HERE"
     ) {
 
       alert(
@@ -125,19 +167,42 @@ loginButton.addEventListener(
       return;
     }
 
+
     try {
+
+      loginStatus.textContent =
+        "Xログインを開始しています…";
+
+
+      // ------------------------------
+      // state
+      // ------------------------------
 
       const state =
         generateRandomString(32);
 
+
+      // ------------------------------
+      // PKCE verifier
+      // ------------------------------
+
       const codeVerifier =
         generateRandomString(64);
+
+
+      // ------------------------------
+      // PKCE challenge
+      // ------------------------------
 
       const codeChallenge =
         await createCodeChallenge(
           codeVerifier
         );
 
+
+      // ------------------------------
+      // 保存
+      // ------------------------------
 
       sessionStorage.setItem(
         "x_oauth_state",
@@ -150,10 +215,15 @@ loginButton.addEventListener(
       );
 
 
+      // ------------------------------
+      // OAuth URL
+      // ------------------------------
+
       const params =
         new URLSearchParams({
 
-          response_type: "code",
+          response_type:
+            "code",
 
           client_id:
             CLIENT_ID,
@@ -176,6 +246,10 @@ loginButton.addEventListener(
         });
 
 
+      // ------------------------------
+      // Xへ移動
+      // ------------------------------
+
       window.location.href =
         `${AUTH_URL}?${params.toString()}`;
 
@@ -189,6 +263,7 @@ loginButton.addEventListener(
 
       loginStatus.textContent =
         "Xログインの開始に失敗しました。";
+
     }
 
   }
@@ -196,7 +271,7 @@ loginButton.addEventListener(
 
 
 // ========================================
-// OAuth callback
+// OAuth Callback
 // ========================================
 
 async function handleOAuthCallback() {
@@ -217,6 +292,10 @@ async function handleOAuthCallback() {
     params.get("error");
 
 
+  // ------------------------------
+  // X側でキャンセル
+  // ------------------------------
+
   if (error) {
 
     loginStatus.textContent =
@@ -226,11 +305,15 @@ async function handleOAuthCallback() {
   }
 
 
+  // codeがなければ通常表示
   if (!code) {
-
     return;
   }
 
+
+  // ------------------------------
+  // 保存した認証情報
+  // ------------------------------
 
   const savedState =
     sessionStorage.getItem(
@@ -255,7 +338,13 @@ async function handleOAuthCallback() {
   }
 
 
-  if (state !== savedState) {
+  // ------------------------------
+  // stateチェック
+  // ------------------------------
+
+  if (
+    state !== savedState
+  ) {
 
     loginStatus.textContent =
       "認証エラー：stateが一致しません。";
@@ -276,6 +365,7 @@ async function handleOAuthCallback() {
 
     const body =
       new URLSearchParams();
+
 
     body.append(
       "code",
@@ -303,8 +393,16 @@ async function handleOAuthCallback() {
     );
 
 
-    let response;
+    console.log(
+      "X-Stock: token request started"
+    );
 
+
+    // ==================================
+    // X Token API
+    // ==================================
+
+    let response;
 
     try {
 
@@ -332,17 +430,16 @@ async function handleOAuthCallback() {
       );
 
       throw new Error(
-        "Xとの通信に失敗しました。詳細: " +
-        (
-          networkError.message ||
-          networkError
-        )
+        "X Token APIへの通信に失敗しました。"
       );
     }
 
 
-    let data;
+    // ==================================
+    // JSON
+    // ==================================
 
+    let data;
 
     try {
 
@@ -362,6 +459,10 @@ async function handleOAuthCallback() {
     }
 
 
+    // ==================================
+    // API error
+    // ==================================
+
     if (!response.ok) {
 
       console.error(
@@ -379,7 +480,7 @@ async function handleOAuthCallback() {
 
 
     // ==================================
-    // Save tokens
+    // Token保存
     // ==================================
 
     sessionStorage.removeItem(
@@ -403,10 +504,13 @@ async function handleOAuthCallback() {
         "x_refresh_token",
         data.refresh_token
       );
+
     }
 
 
-    // URLからcodeを消す
+    // ==================================
+    // URLをきれいにする
+    // ==================================
 
     window.history.replaceState(
       {},
@@ -419,6 +523,10 @@ async function handleOAuthCallback() {
       "Xアカウントに接続しました。";
 
 
+    // ==================================
+    // 自分のアカウント取得
+    // ==================================
+
     await loadMyAccount();
 
 
@@ -429,15 +537,16 @@ async function handleOAuthCallback() {
       error
     );
 
-
     loginStatus.textContent =
       `接続に失敗しました：${error.message}`;
+
   }
+
 }
 
 
 // ========================================
-// Get my account
+// 自分のXアカウント取得
 // ========================================
 
 async function loadMyAccount() {
@@ -449,7 +558,6 @@ async function loadMyAccount() {
 
 
   if (!token) {
-
     return;
   }
 
@@ -460,6 +568,8 @@ async function loadMyAccount() {
       await fetch(
         `${API_BASE}/users/me`,
         {
+          method: "GET",
+
           headers: {
             Authorization:
               `Bearer ${token}`
@@ -491,6 +601,7 @@ async function loadMyAccount() {
       `接続中：@${data.data.username}`;
 
 
+    // 投稿取得
     await loadMyPosts(
       data.data.id
     );
@@ -505,12 +616,14 @@ async function loadMyAccount() {
 
     loginStatus.textContent =
       `アカウント情報の取得に失敗しました：${error.message}`;
+
   }
+
 }
 
 
 // ========================================
-// Get my posts
+// 自分の投稿取得
 // ========================================
 
 async function loadMyPosts(userId) {
@@ -521,10 +634,17 @@ async function loadMyPosts(userId) {
     );
 
 
+  if (!token) {
+    return;
+  }
+
+
   postList.innerHTML =
-    `<div class="empty">
-      投稿を読み込んでいます…
-    </div>`;
+    `
+      <div class="empty">
+        投稿を読み込んでいます…
+      </div>
+    `;
 
 
   try {
@@ -539,6 +659,8 @@ async function loadMyPosts(userId) {
       await fetch(
         url,
         {
+          method: "GET",
+
           headers: {
             Authorization:
               `Bearer ${token}`
@@ -582,32 +704,42 @@ async function loadMyPosts(userId) {
 
 
     postList.innerHTML =
-      `<div class="empty">
-        投稿の取得に失敗しました。<br>
-        ${escapeHtml(error.message)}
-      </div>`;
+      `
+        <div class="empty">
+          投稿の取得に失敗しました。
+          <br><br>
+          ${escapeHtml(error.message)}
+        </div>
+      `;
+
   }
+
 }
 
 
 // ========================================
-// Render posts
+// 投稿表示
 // ========================================
 
 function renderPosts() {
 
-  if (posts.length === 0) {
+  if (
+    posts.length === 0
+  ) {
 
     postList.innerHTML =
-      `<div class="empty">
-        投稿がありません。
-      </div>`;
+      `
+        <div class="empty">
+          投稿がありません。
+        </div>
+      `;
 
     return;
   }
 
 
-  postList.innerHTML = "";
+  postList.innerHTML =
+    "";
 
 
   posts.forEach(
@@ -623,27 +755,28 @@ function renderPosts() {
         "post-item";
 
 
-      item.innerHTML = `
+      item.innerHTML =
+        `
+          <input
+            type="checkbox"
+            class="post-checkbox"
+            data-id="${escapeHtml(post.id)}"
+          >
 
-        <input
-          type="checkbox"
-          class="post-checkbox"
-          data-id="${post.id}"
-        >
+          <div class="post-content">
 
-        <div class="post-content">
+            <div class="post-text">
+              ${escapeHtml(post.text)}
+            </div>
 
-          <div class="post-text">
-            ${escapeHtml(post.text)}
+            <div class="post-date">
+              ${escapeHtml(
+                post.created_at || ""
+              )}
+            </div>
+
           </div>
-
-          <div class="post-date">
-            ${post.created_at || ""}
-          </div>
-
-        </div>
-
-      `;
+        `;
 
 
       const checkbox =
@@ -667,11 +800,12 @@ function renderPosts() {
 
 
   updateSelectedCount();
+
 }
 
 
 // ========================================
-// HTML escape
+// HTMLエスケープ
 // ========================================
 
 function escapeHtml(text) {
@@ -682,14 +816,16 @@ function escapeHtml(text) {
     );
 
   div.textContent =
-    text;
+    text == null
+      ? ""
+      : String(text);
 
   return div.innerHTML;
 }
 
 
 // ========================================
-// Select all
+// すべて選択
 // ========================================
 
 selectAllButton.addEventListener(
@@ -719,7 +855,7 @@ selectAllButton.addEventListener(
 
 
 // ========================================
-// Selected count
+// 選択数更新
 // ========================================
 
 function updateSelectedCount() {
@@ -740,7 +876,7 @@ function updateSelectedCount() {
 
 
 // ========================================
-// Delete posts
+// 投稿削除
 // ========================================
 
 deleteButton.addEventListener(
@@ -753,8 +889,9 @@ deleteButton.addEventListener(
       );
 
 
-    if (checked.length === 0) {
-
+    if (
+      checked.length === 0
+    ) {
       return;
     }
 
@@ -766,7 +903,6 @@ deleteButton.addEventListener(
 
 
     if (!confirmed) {
-
       return;
     }
 
@@ -794,6 +930,10 @@ deleteButton.addEventListener(
     let successCount =
       0;
 
+
+    // ==================================
+    // 1件ずつ削除
+    // ==================================
 
     for (
       const checkbox of checked
@@ -838,6 +978,7 @@ deleteButton.addEventListener(
             postId,
             data
           );
+
         }
 
 
@@ -848,15 +989,24 @@ deleteButton.addEventListener(
           postId,
           error
         );
+
       }
 
     }
 
 
+    // ==================================
+    // 結果
+    // ==================================
+
     alert(
       `${successCount}件の投稿を削除しました。`
     );
 
+
+    // ==================================
+    // 最新状態を再取得
+    // ==================================
 
     await loadMyAccount();
 
@@ -865,7 +1015,7 @@ deleteButton.addEventListener(
 
 
 // ========================================
-// Start
+// 起動
 // ========================================
 
 handleOAuthCallback();
