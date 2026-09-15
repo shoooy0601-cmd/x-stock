@@ -179,18 +179,37 @@ async function handleOAuthCallback() {
     body.append("redirect_uri", REDIRECT_URI);
     body.append("code_verifier", codeVerifier);
 
-    const response = await fetch(TOKEN_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type":
-          "application/x-www-form-urlencoded"
-      },
-      body: body.toString()
-    });
+   
+    let response;
 
-    const data = await response.json();
+try {
+  response = await fetch(TOKEN_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: body.toString()
+  });
+} catch (networkError) {
+  console.error("TOKEN FETCH ERROR:", networkError);
 
-    if (!response.ok) {
+  throw new Error(
+    "Xとの通信に失敗しました。詳細: " +
+    (networkError.message || networkError)
+  );
+}
+
+let data;
+
+try {
+  data = await response.json();
+} catch (jsonError) {
+  console.error("TOKEN JSON ERROR:", jsonError);
+
+  throw new Error(
+    `Xから正常なJSONが返ってきませんでした。HTTP ${response.status}`
+  );
+}
 
       console.error(data);
 
