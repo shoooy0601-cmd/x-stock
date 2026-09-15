@@ -1,1 +1,207 @@
+* {
+  box-sizing: border-box;
+}
 
+body {
+  margin: 0;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+
+  background: #f5f5f5;
+  color: #111;
+}
+
+.header {
+  background: #000;
+  color: #fff;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.header h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+}
+
+.header p {
+  margin: 0;
+  opacity: 0.8;
+}
+
+main {
+  width: min(720px, 92%);
+  margin: 30px auto;
+}
+
+section {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+h2 {
+  margin-top: 0;
+}
+
+.primary-button,
+.secondary-button,
+.delete-button {
+  border: 0;
+  border-radius: 10px;
+
+  padding: 13px 18px;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.primary-button {
+  background: #000;
+  color: #fff;
+}
+
+.primary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  background: #eee;
+  color: #111;
+}
+
+.secondary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.delete-button {
+  width: 100%;
+  margin-top: 16px;
+
+  background: #d00;
+  color: #fff;
+}
+
+.delete-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.status {
+  color: #666;
+  margin-bottom: 0;
+
+  line-height: 1.6;
+}
+
+.section-header {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.post-list {
+  margin-top: 20px;
+}
+
+.empty {
+  text-align: center;
+  color: #777;
+
+  padding: 30px 10px;
+
+  line-height: 1.8;
+}
+
+.post-item {
+  display: flex;
+
+  gap: 12px;
+
+  padding: 16px 0;
+
+  border-bottom: 1px solid #eee;
+}
+
+.post-checkbox {
+  width: 20px;
+  height: 20px;
+
+  flex-shrink: 0;
+
+  margin-top: 3px;
+}
+
+.post-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.post-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+
+  line-height: 1.6;
+}
+
+.post-date {
+  margin-top: 8px;
+
+  font-size: 12px;
+
+  color: #888;
+}
+
+footer {
+  text-align: center;
+
+  color: #888;
+
+  padding: 30px;
+}
+
+@media (max-width: 600px) {
+
+  .header {
+    padding: 25px 15px;
+  }
+
+  .header h1 {
+    font-size: 28px;
+  }
+
+  main {
+    width: 94%;
+    margin: 20px auto;
+  }
+
+  section {
+    padding: 20px;
+  }
+
+  .section-header {
+    align-items: flex-start;
+  }
+
+  .section-header h2 {
+    margin-bottom: 0;
+  }
+
+  .secondary-button {
+    white-space: nowrap;
+  }
+}
