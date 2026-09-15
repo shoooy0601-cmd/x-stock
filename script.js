@@ -12,12 +12,33 @@ const AUTH_URL =
 const SCOPES =
   "tweet.read tweet.write users.read offline.access";
 
+
 const loginButton =
   document.getElementById("loginButton");
 
 const loginStatus =
   document.getElementById("loginStatus");
 
+const postList =
+  document.getElementById("postList");
+
+const selectAllButton =
+  document.getElementById("selectAllButton");
+
+const deleteButton =
+  document.getElementById("deleteButton");
+
+const selectedCount =
+  document.getElementById("selectedCount");
+
+
+let accessToken = "";
+let posts = [];
+
+
+/* =========================
+   PKCE
+========================= */
 
 function randomString(length) {
   const chars =
@@ -55,83 +76,148 @@ async function createChallenge(verifier) {
 }
 
 
+/* =========================
+   Xログイン開始
+========================= */
+
 loginButton.addEventListener(
   "click",
   async () => {
 
-    if (
-      !CLIENT_ID ||
-      CLIENT_ID === "YOUR_CLIENT_ID_HERE"
-    ) {
-      alert(
-        "Client IDを設定してください。"
+    try {
+
+      loginStatus.textContent =
+        "Xログインを開始しています…";
+
+      const state =
+        randomString(32);
+
+      const verifier =
+        randomString(64);
+
+      const challenge =
+        await createChallenge(verifier);
+
+      sessionStorage.setItem(
+        "x_oauth_state",
+        state
       );
-      return;
+
+      sessionStorage.setItem(
+        "x_code_verifier",
+        verifier
+      );
+
+      const params =
+        new URLSearchParams();
+
+      params.set(
+        "response_type",
+        "code"
+      );
+
+      params.set(
+        "client_id",
+        CLIENT_ID
+      );
+
+      params.set(
+        "redirect_uri",
+        REDIRECT_URI
+      );
+
+      params.set(
+        "scope",
+        SCOPES
+      );
+
+      params.set(
+        "state",
+        state
+      );
+
+      params.set(
+        "code_challenge",
+        challenge
+      );
+
+      params.set(
+        "code_challenge_method",
+        "S256"
+      );
+
+      window.location.href =
+        AUTH_URL +
+        "?" +
+        params.toString();
+
+    } catch (error) {
+
+      console.error(error);
+
+      loginStatus.textContent =
+        "Xログインの開始に失敗しました。";
+
+      alert(
+        "Xログインの開始に失敗しました。"
+      );
     }
-
-    loginStatus.textContent =
-      "Xログインを開始しています…";
-
-    const state =
-      randomString(32);
-
-    const verifier =
-      randomString(64);
-
-    const challenge =
-      await createChallenge(verifier);
-
-    sessionStorage.setItem(
-      "x_oauth_state",
-      state
-    );
-
-    sessionStorage.setItem(
-      "x_code_verifier",
-      verifier
-    );
-
-    const params =
-      new URLSearchParams();
-
-    params.set(
-      "response_type",
-      "code"
-    );
-
-    params.set(
-      "client_id",
-      CLIENT_ID
-    );
-
-    params.set(
-      "redirect_uri",
-      REDIRECT_URI
-    );
-
-    params.set(
-      "scope",
-      SCOPES
-    );
-
-    params.set(
-      "state",
-      state
-    );
-
-    params.set(
-      "code_challenge",
-      challenge
-    );
-
-    params.set(
-      "code_challenge_method",
-      "S256"
-    );
-
-    window.location.href =
-      AUTH_URL +
-      "?" +
-      params.toString();
   }
 );
+
+
+/* =========================
+   認証コード処理
+========================= */
+
+async function handleCallback() {
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  const code =
+    params.get("code");
+
+  const returnedState =
+    params.get("state");
+
+  const error =
+    params.get("error");
+
+  if (error) {
+
+    console.error(
+      "X OAuth error:",
+      error
+    );
+
+    loginStatus.textContent =
+      "Xの認証がキャンセルされました。";
+
+    return;
+  }
+
+  if (!code) {
+    return;
+  }
+
+  const savedState =
+    sessionStorage.getItem(
+      "x_oauth_state"
+    );
+
+  const verifier =
+    sessionStorage.getItem(
+      "x_code_verifier"
+    );
+
+  if (
+    !savedState ||
+    !returnedState ||
+    savedState !== returnedState
+  ) {
+
+    alert(
+      "OAuth認証の確認に
