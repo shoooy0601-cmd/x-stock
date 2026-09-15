@@ -1,5 +1,4 @@
-const CLIENT_ID = "
-dHpEalVBeWRTZ1BpSmNJdXdpdXk6MTpjaQ";
+const CLIENT_ID = "dHpEalVBeWRTZ1BpSmNJdXdpdXk6MTpjaQ";
 
 const REDIRECT_URI =
   "https://shoooy0601-cmd.github.io/x-stock/";
@@ -19,6 +18,7 @@ const loginButton =
 const loginStatus =
   document.getElementById("loginStatus");
 
+
 function randomString(length) {
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
@@ -32,6 +32,7 @@ function randomString(length) {
     .map(x => chars[x % chars.length])
     .join("");
 }
+
 
 async function createChallenge(verifier) {
   const data =
@@ -53,9 +54,11 @@ async function createChallenge(verifier) {
     .replace(/=+$/, "");
 }
 
+
 loginButton.addEventListener(
   "click",
   async () => {
+
     if (
       !CLIENT_ID ||
       CLIENT_ID === "YOUR_CLIENT_ID_HERE"
