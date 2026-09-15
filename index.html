@@ -1,1 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X-Stock</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
 
+<body>
+
+  <header class="header">
+    <h1>X-Stock</h1>
+    <p>自分のX投稿を整理・一括削除</p>
+  </header>
+
+  <main>
+
+    <section class="login-section">
+      <h2>Xアカウント</h2>
+
+      <button id="loginButton" class="primary-button">
+        Xアカウントを接続
+      </button>
+
+      <p id="loginStatus" class="status">
+        まだXアカウントに接続されていません
+      </p>
+    </section>
+
+    <section class="posts-section">
+
+      <div class="section-header">
+        <h2>投稿一覧</h2>
+
+        <button id="selectAllButton" class="secondary-button">
+          すべて選択
+        </button>
+      </div>
+
+      <div id="postList" class="post-list">
+
+        <div class="empty">
+          Xアカウントを接続すると
+          <br>
+          投稿一覧がここに表示されます。
+        </div>
+
+      </div>
+
+    </section>
+
+    <section class="action-section">
+
+      <div id="selectedCount">
+        選択中：0件
+      </div>
+
+      <button id="deleteButton" class="delete-button" disabled>
+        選択した投稿を削除
+      </button>
+
+    </section>
+
+  </main>
+
+  <footer>
+    <p>X-Stock</p>
+  </footer>
+
+  <script src="./script.js"></script>
+
+</body>
+</html>
