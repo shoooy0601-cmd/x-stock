@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>X-Stock</title>
+
   <link rel="stylesheet" href="./style.css">
 </head>
 
@@ -16,29 +18,48 @@
 
   <main>
 
+    <!-- Xアカウント接続 -->
     <section class="login-section">
+
       <h2>Xアカウント</h2>
 
-      <button id="loginButton" class="primary-button">
+      <button
+        id="loginButton"
+        class="primary-button"
+      >
         Xアカウントを接続
       </button>
 
-      <p id="loginStatus" class="status">
+      <p
+        id="loginStatus"
+        class="status"
+      >
         まだXアカウントに接続されていません
       </p>
+
     </section>
 
+
+    <!-- 投稿一覧 -->
     <section class="posts-section">
 
       <div class="section-header">
+
         <h2>投稿一覧</h2>
 
-        <button id="selectAllButton" class="secondary-button">
+        <button
+          id="selectAllButton"
+          class="secondary-button"
+        >
           すべて選択
         </button>
+
       </div>
 
-      <div id="postList" class="post-list">
+      <div
+        id="postList"
+        class="post-list"
+      >
 
         <div class="empty">
           Xアカウントを接続すると
@@ -50,13 +71,19 @@
 
     </section>
 
+
+    <!-- 削除 -->
     <section class="action-section">
 
       <div id="selectedCount">
         選択中：0件
       </div>
 
-      <button id="deleteButton" class="delete-button" disabled>
+      <button
+        id="deleteButton"
+        class="delete-button"
+        disabled
+      >
         選択した投稿を削除
       </button>
 
@@ -64,11 +91,14 @@
 
   </main>
 
+
   <footer>
     <p>X-Stock</p>
   </footer>
 
-  <script src="./script.js"></script>
+
+  <!-- ★ v=3 はSafariの古いJSキャッシュを避けるため -->
+  <script src="./script.js?v=3"></script>
 
 </body>
 </html>
