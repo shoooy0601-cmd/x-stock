@@ -12,33 +12,11 @@ const AUTH_URL =
 const SCOPES =
   "tweet.read tweet.write users.read offline.access";
 
-
 const loginButton =
   document.getElementById("loginButton");
 
 const loginStatus =
   document.getElementById("loginStatus");
-
-const postList =
-  document.getElementById("postList");
-
-const selectAllButton =
-  document.getElementById("selectAllButton");
-
-const deleteButton =
-  document.getElementById("deleteButton");
-
-const selectedCount =
-  document.getElementById("selectedCount");
-
-
-let accessToken = "";
-let posts = [];
-
-
-/* =========================
-   PKCE
-========================= */
 
 function randomString(length) {
   const chars =
@@ -53,7 +31,6 @@ function randomString(length) {
     .map(x => chars[x % chars.length])
     .join("");
 }
-
 
 async function createChallenge(verifier) {
   const data =
@@ -75,103 +52,77 @@ async function createChallenge(verifier) {
     .replace(/=+$/, "");
 }
 
-
-/* =========================
-   Xログイン開始
-========================= */
-
 loginButton.addEventListener(
   "click",
   async () => {
+    loginStatus.textContent =
+      "Xログインを開始しています…";
 
-    try {
+    const state =
+      randomString(32);
 
-      loginStatus.textContent =
-        "Xログインを開始しています…";
+    const verifier =
+      randomString(64);
 
-      const state =
-        randomString(32);
+    const challenge =
+      await createChallenge(verifier);
 
-      const verifier =
-        randomString(64);
+    sessionStorage.setItem(
+      "x_oauth_state",
+      state
+    );
 
-      const challenge =
-        await createChallenge(verifier);
+    sessionStorage.setItem(
+      "x_code_verifier",
+      verifier
+    );
 
-      sessionStorage.setItem(
-        "x_oauth_state",
-        state
-      );
+    const params =
+      new URLSearchParams();
 
-      sessionStorage.setItem(
-        "x_code_verifier",
-        verifier
-      );
+    params.set(
+      "response_type",
+      "code"
+    );
 
-      const params =
-        new URLSearchParams();
+    params.set(
+      "client_id",
+      CLIENT_ID
+    );
 
-      params.set(
-        "response_type",
-        "code"
-      );
+    params.set(
+      "redirect_uri",
+      REDIRECT_URI
+    );
 
-      params.set(
-        "client_id",
-        CLIENT_ID
-      );
+    params.set(
+      "scope",
+      SCOPES
+    );
 
-      params.set(
-        "redirect_uri",
-        REDIRECT_URI
-      );
+    params.set(
+      "state",
+      state
+    );
 
-      params.set(
-        "scope",
-        SCOPES
-      );
+    params.set(
+      "code_challenge",
+      challenge
+    );
 
-      params.set(
-        "state",
-        state
-      );
+    params.set(
+      "code_challenge_method",
+      "S256"
+    );
 
-      params.set(
-        "code_challenge",
-        challenge
-      );
-
-      params.set(
-        "code_challenge_method",
-        "S256"
-      );
-
-      window.location.href =
-        AUTH_URL +
-        "?" +
-        params.toString();
-
-    } catch (error) {
-
-      console.error(error);
-
-      loginStatus.textContent =
-        "Xログインの開始に失敗しました。";
-
-      alert(
-        "Xログインの開始に失敗しました。"
-      );
-    }
+    window.location.href =
+      AUTH_URL +
+      "?" +
+      params.toString();
   }
 );
 
-
-/* =========================
-   認証コード処理
-========================= */
-
 async function handleCallback() {
-
   const params =
     new URLSearchParams(
       window.location.search
@@ -182,22 +133,6 @@ async function handleCallback() {
 
   const returnedState =
     params.get("state");
-
-  const error =
-    params.get("error");
-
-  if (error) {
-
-    console.error(
-      "X OAuth error:",
-      error
-    );
-
-    loginStatus.textContent =
-      "Xの認証がキャンセルされました。";
-
-    return;
-  }
 
   if (!code) {
     return;
@@ -218,6 +153,113 @@ async function handleCallback() {
     !returnedState ||
     savedState !== returnedState
   ) {
+    alert(
+      "OAuth認証に失敗しました。"
+    );
+    return;
+  }
+
+  if (!verifier) {
+    alert(
+      "認証情報が見つかりません。"
+    );
+    return;
+  }
+
+  loginStatus.textContent =
+    "Xアカウントに接続しています…";
+
+  const body =
+    new URLSearchParams();
+
+  body.set(
+    "code",
+    code
+  );
+
+  body.set(
+    "grant_type",
+    "authorization_code"
+  );
+
+  body.set(
+    "client_id",
+    CLIENT_ID
+  );
+
+  body.set(
+    "redirect_uri",
+    REDIRECT_URI
+  );
+
+  body.set(
+    "code_verifier",
+    verifier
+  );
+
+  try {
+    const response =
+      await fetch(
+        WORKER_URL +
+          "/oauth2/token",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/x-www-form-urlencoded"
+          },
+          body: body.toString()
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error_description ||
+        data.error ||
+        "トークン取得に失敗しました"
+      );
+    }
+
+    sessionStorage.setItem(
+      "x_access_token",
+      data.access_token
+    );
+
+    sessionStorage.removeItem(
+      "x_oauth_state"
+    );
+
+    sessionStorage.removeItem(
+      "x_code_verifier"
+    );
+
+    window.history.replaceState(
+      {},
+      document.title,
+      REDIRECT_URI
+    );
+
+    loginStatus.textContent =
+      "Xアカウントに接続しました。";
 
     alert(
-      "OAuth認証の確認に
+      "Xアカウントへの接続に成功しました！"
+    );
+
+  } catch (error) {
+    console.error(error);
+
+    loginStatus.textContent =
+      "接続に失敗しました。";
+
+    alert(
+      "接続に失敗しました：\n" +
+      error.message
+    );
+  }
+}
+
+handleCallback();
